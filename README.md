@@ -149,7 +149,7 @@ Whether you're learning security analysis, researching detection methods, develo
 
 ## Getting Started
 
-### Prerequisites for Investigation Commands
+### Prerequisites for Garuda Commands
 
 ⚠️ **Important**: Launch **PowerShell 7 as Administrator** to execute Garuda commands (required for accessing Sysmon logs).
 
