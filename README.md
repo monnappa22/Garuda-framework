@@ -131,12 +131,26 @@ Whether you're learning security analysis, researching detection methods, develo
       ```
 
 3. **Set PowerShell Execution Policy** (if needed)
+   
+   **For Current User Installation:**
    ```powershell
    # Check current execution policy
    Get-ExecutionPolicy
    
-   # Set execution policy to bypass restrictions (recommended for Garuda)
+   # Set execution policy for current user only (no admin required)
    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
+   ```
+   
+   **For System-wide Installation:**
+   ```powershell
+   # Check current execution policy at all scopes
+   Get-ExecutionPolicy -List
+   
+   # Option 1: Set for current user (recommended, works in most cases)
+   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
+   
+   # Option 2: Set system-wide (requires admin, affects all users)
+   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope LocalMachine
    ```
 
 4. **Verify Installation**
