@@ -60,38 +60,69 @@ Whether you're learning security analysis, researching detection methods, develo
    - Download ZIP from [GitHub repository](https://github.com/monnappa22/Garuda-framework)
    - Extract to a folder (e.g., `C:\Garuda-framework`)
 
-2. **Copy Garuda Folder to PowerShell Module Path**
+2. **Install Garuda Module**
 
-   **Option A: Using PowerShell Commands (Recommended)**
+   **Choose your installation scope:** You can install Garuda either for the current user only or system-wide for all users.
+
+   #### **Option A: Current User Installation (Recommended)**
+   *Installs only for your user account, no admin privileges required for installation*
+   
+   **Note**: While installation doesn't require admin privileges, running Garuda commands will require administrator privileges to access Sysmon logs.
+
+   **Method 1: Using PowerShell Commands**
    1. Open PowerShell in the downloaded/extracted Garuda-framework folder
-   2. Run the following commands:
+   2. Run the following command:
    ```powershell
-   # For current user installation
+   # Current user installation
    $UserModulePath = [Environment]::GetFolderPath('MyDocuments') + '\PowerShell\Modules'
    Copy-Item -Path ".\Garuda" -Destination "$UserModulePath\Garuda" -Recurse -Force
-   
-   # For system-wide installation (requires admin privileges)
-   $SystemModulePath = "$env:ProgramFiles\PowerShell\Modules"
-   Copy-Item -Path ".\Garuda" -Destination "$SystemModulePath\Garuda" -Recurse -Force
    ```
 
-   **Option B: Manual Copy Using File Explorer**
+   **Method 2: Manual Copy Using File Explorer**
    1. **Locate or create your PowerShell Modules directory:**
-      - **Current User**: `C:\Users\{YourUsername}\Documents\PowerShell\Modules`
-      - **System-wide**: `C:\Program Files\PowerShell\Modules` (requires admin)
+      - Path: `C:\Users\{YourUsername}\Documents\PowerShell\Modules`
       - **If the folder doesn't exist**: Create the folder structure manually:
         1. Navigate to `C:\Users\{YourUsername}\Documents`
         2. Create a `PowerShell` folder (if it doesn't exist)
         3. Inside PowerShell folder, create a `Modules` folder
    
    2. **Copy the Garuda folder:**
-      - From your extracted folder: `C:\Garuda-framework\Garuda`
+      - From: `C:\Garuda-framework\Garuda` (your extracted folder)
       - To: `C:\Users\{YourUsername}\Documents\PowerShell\Modules\Garuda`
       - Use Ctrl+C and Ctrl+V or right-click → Copy/Paste
    
    3. **Verify the structure:**
       ```
       C:\Users\{YourUsername}\Documents\PowerShell\Modules\
+      └── Garuda\
+          └── Investigate\
+              ├── GarudaMods\
+              ├── GarudaObj\
+              └── GarudaRaw\
+      ```
+
+   #### **Option B: System-wide Installation**
+   *Installs for all users on the system, requires administrator privileges*
+
+   **Method 1: Using PowerShell Commands (Run as Administrator)**
+   1. Open PowerShell **as Administrator** in the downloaded/extracted Garuda-framework folder
+   2. Run the following command:
+   ```powershell
+   # System-wide installation (requires admin)
+   $SystemModulePath = "$env:ProgramFiles\PowerShell\Modules"
+   Copy-Item -Path ".\Garuda" -Destination "$SystemModulePath\Garuda" -Recurse -Force
+   ```
+
+   **Method 2: Manual Copy Using File Explorer (Run as Administrator)**
+   1. **Open File Explorer as Administrator**
+   2. **Navigate to system modules directory:**
+      - Path: `C:\Program Files\PowerShell\Modules`
+   3. **Copy the Garuda folder:**
+      - From: `C:\Garuda-framework\Garuda` (your extracted folder)
+      - To: `C:\Program Files\PowerShell\Modules\Garuda`
+   4. **Verify the structure:**
+      ```
+      C:\Program Files\PowerShell\Modules\
       └── Garuda\
           └── Investigate\
               ├── GarudaMods\
@@ -117,6 +148,12 @@ Whether you're learning security analysis, researching detection methods, develo
 **Note**: PowerShell 7.0+ will automatically load modules when you use their commands, so no manual importing is needed.
 
 ## Getting Started
+
+### Prerequisites for Investigation Commands
+
+⚠️ **Important**: Launch **PowerShell 7 as Administrator** to execute Garuda commands (required for accessing Sysmon logs).
+
+**Quick launch**: Search "PowerShell 7" → Right-click → "Run as administrator"
 
 ### Command Discovery
 
@@ -368,8 +405,6 @@ Garuda uses a **dual license model** to support both open source use and commerc
 **For commercial products and proprietary applications:**
 - ✅ **No GPL v3 restrictions** - keep your modifications private
 - ✅ **Embed in closed-source products**
-- ✅ **Enterprise support available**
-- ✅ **Legal protection and indemnification**
 - 💡 **Contact**: [monnappa22@gmail.com](mailto:monnappa22@gmail.com?subject=Garuda%20Commercial%20License%20Inquiry)
 
 ### Which License Do I Need?
