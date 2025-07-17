@@ -14,10 +14,10 @@ function View-WmiFilterSummary {
     }
     end {
         $WmiFilterEvents | select-object UtcTime, Name, EventNamespace, Query, `
-            @{Name = "WmiFilterOperation"; Expression = { "{0} by {1}" -f $_.Operation, $_.User } } `
-        | sort-object WmiFilterOperation | Format-Table UtcTime, Name, EventNamespace, Query -GroupBy WmiFilterOperation -Autosize -Wrap `
+            @{Name = "WmiFilterInfo"; Expression = { "{0} by {1}" -f $_.Operation, $_.User } } `
+        | sort-object WmiFilterInfo | Format-Table UtcTime, Name, EventNamespace, Query -GroupBy WmiFilterInfo -Autosize -Wrap `
         | Out-String -stream | ForEach-Object {
-            if ($_ -match "WmiFilterOperation:.*") {
+            if ($_ -match "WmiFilterInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -44,7 +44,7 @@ function View-WmiFilterInteractiveTable {
     end {
         $WmiFilterEvents | Select-Object UTCtime,
             @{Name="Event"; Expression={ "WMI Filter $($_.Operation) (19)" }},
-            @{Name="EventDetails"; Expression={ "Filter: $($_.Name) | Namespace: $($_.EventNamespace) | Query: $($_.Query)" }},
+            @{Name="EventDetails"; Expression={ "Name: $($_.Name) | EventNamespace: $($_.EventNamespace) | Query: $($_.Query)" }},
             # Event identification
             EventId, 
             EventType,
@@ -81,7 +81,7 @@ function View-WmiFilterTimeline {
             UTCtime,
             @{Name="User"; Expression={ $_.User }},
             @{Name="Event"; Expression={ "WMI Filter $($_.Operation) (19)" }},
-            @{Name="EventDetails"; Expression={ "Filter: $($_.Name) | Namespace: $($_.EventNamespace) | Query: $($_.Query)" }} | 
+            @{Name="EventDetails"; Expression={ "Name: $($_.Name) | EventNamespace: $($_.EventNamespace) | Query: $($_.Query)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -106,7 +106,7 @@ function View-WmiFilterTimelineList {
             HostName,
             User,
             @{Name="Event"; Expression={ "WMI Filter $($_.Operation) (19)" }},
-            @{Name="EventDetails"; Expression={ "Filter: `"$($_.Name)`" | Namespace: $($_.EventNamespace) | Query: `"$($_.Query)`"" }} | 
+            @{Name="EventDetails"; Expression={ "Name: $($_.Name) | EventNamespace: $($_.EventNamespace) | Query: $($_.Query)" }} | 
             Sort-Object UTCtime | Format-List
     }
 }

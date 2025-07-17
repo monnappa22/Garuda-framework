@@ -16,9 +16,9 @@ function View-ProcessAccessTimeline {
         $ProcessAccessEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={ $_.SourceProcessGuid }},
-            @{Name="Process"; Expression={ $_.SourceProcessName }},
+            @{Name="Process"; Expression={ "$($_.SourceProcessName)($($_.SourceProcessId))" }},
             @{Name="Event"; Expression={ "Process Access (10)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetImage) [$($_.TargetProcessGuid)] (Access: $($_.GrantedAccess))" }} |
+            @{Name="EventDetails"; Expression={ "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | GrantedAccess: $($_.GrantedAccess)" }} |
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -42,13 +42,12 @@ function View-ProcessAccessTimelineList {
             UTCtime,
             HostName,
             @{Name="User"; Expression={ "$($_.SourceUser) -> $($_.TargetUser)" }},
-            @{Name="ProcessId"; Expression={ $_.SourceProcessId }},
-            @{Name="Process"; Expression={ "$($_.SourceImage) [$($_.SourceProcessGuid)]" }},
+            @{Name="Process"; Expression={ "SourceImage: $($_.SourceImage) | SourceProcessId: $($_.SourceProcessId) | SourceProcessGuid: $($_.SourceProcessGuid)" }},
             @{Name="Event"; Expression={ "Process Access (10)" }},
             @{Name="EventDetails"; Expression={
-                $details = "$($_.TargetImage) [$($_.TargetProcessGuid)] (Access: $($_.GrantedAccess))"
+                $details = "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | GrantedAccess: $($_.GrantedAccess)"
                 if ($_.CallTrace) {
-                    "$details [CallTrace: $($_.CallTrace)]"
+                    "$details | CallTrace: $($_.CallTrace)"
                 } else {
                     $details
                 }
@@ -80,7 +79,7 @@ function View-ProcessAccessSummary {
             Expression = { "Process Access (10)" }
         }, @{
             Name = "EventDetails"
-            Expression = { "$($_.TargetImage) [$($_.TargetProcessGuid)] (Access: $($_.GrantedAccess))" }
+            Expression = { "TargetImage: $($_.TargetImage) | TargetProcessGuid: $($_.TargetProcessGuid) | GrantedAccess: $($_.GrantedAccess)" }
         } | Sort-Object ProcessInfo, UTCtime | 
         Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
         Out-String -stream | ForEach-Object {
@@ -111,10 +110,10 @@ function View-ProcessAccessInteractiveTable {
     end {
         $ProcessAccessEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.SourceProcessGuid }},
-            @{Name="Process"; Expression={ $_.SourceImage }},
+            @{Name="Process"; Expression={ "SourceImage: $($_.SourceImage) | SourceProcessId: $($_.SourceProcessId) | SourceProcessGuid: $($_.SourceProcessGuid)" }},
             @{Name="Event"; Expression={ "Process Access (10)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.SourceImage) [$($_.SourceProcessId)] ---> $($_.TargetImage) [$($_.TargetProcessId)] [Access: $($_.GrantedAccess)]"
+                "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | GrantedAccess: $($_.GrantedAccess)"
             }},
             HostName,
             EventId,

@@ -15,11 +15,11 @@ function View-RemoteThreadTimeline {
     End {
         $RemoteThreadEvents | Select-Object `
             UTCtime,
-            SourceProcessGuid,
-            SourceProcessName,
+            @{Name="GUID"; Expression={$_.SourceProcessGuid}},
+            @{Name="Process"; Expression={ "$($_.SourceProcessName)($($_.SourceProcessId))" }},
             @{Name="Event"; Expression={ "Remote Thread (8)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.TargetImage) [$($_.TargetProcessGuid)] [StartAddress: $($_.StartAddress)] [StartModule: $($_.StartModule)] [StartFunction: $($_.StartFunction)]"
+                "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | StartAddress: $($_.StartAddress) | StartModule: $($_.StartModule) | StartFunction: $($_.StartFunction)"
             }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
@@ -44,11 +44,10 @@ function View-RemoteThreadTimelineList {
             UTCtime,
             HostName,
             @{Name="User"; Expression={ "$($_.SourceUser) -> $($_.TargetUser)" }},
-            SourceProcessId,
-            @{Name="Process"; Expression={ "$($_.SourceImage) [$($_.SourceProcessGuid)]" }},
+            @{Name="Process"; Expression={ "SourceImage: $($_.SourceImage) | SourceProcessId: $($_.SourceProcessId) | SourceProcessGuid: $($_.SourceProcessGuid)" }},
             @{Name="Event"; Expression={ "Remote Thread (8)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.TargetImage) [$($_.TargetProcessGuid)] [StartAddress: $($_.StartAddress)] [StartModule: $($_.StartModule)] [StartFunction: $($_.StartFunction)]"
+                "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | StartAddress: $($_.StartAddress) | StartModule: $($_.StartModule) | StartFunction: $($_.StartFunction)"
             }} |
             Sort-Object UTCtime
     }
@@ -70,11 +69,11 @@ function View-RemoteThreadSummary {
     }
     end {
         $RemoteThreadEvents | Select-Object `
-            @{Name = "ProcessInfo"; Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.SourceImage, $_.SourceProcessId, $_.SourceProcessGuid }},
+            @{Name = "ProcessInfo"; Expression = { "SourceImage: $($_.SourceImage) | SourceProcessId: $($_.SourceProcessId) | SourceProcessGuid: $($_.SourceProcessGuid)" }},
             UTCtime,
             @{Name = "Event"; Expression = { "Remote Thread (8)" }},
             @{Name = "EventDetails"; Expression = { 
-                "$($_.TargetImage) [$($_.TargetProcessGuid)] [StartAddress: $($_.StartAddress)] [StartModule: $($_.StartModule)] [StartFunction: $($_.StartFunction)]"
+                "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | StartAddress: $($_.StartAddress) | StartModule: $($_.StartModule) | StartFunction: $($_.StartFunction)"
             }} |
             Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
@@ -107,10 +106,10 @@ function View-RemoteThreadInteractiveTable {
         # Create a view with the standard first 5 fields, then Event ID 8 specific fields
         $RemoteThreadEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.SourceProcessGuid }},
-            @{Name="Process"; Expression={ $_.SourceImage }},
+            @{Name="Process"; Expression={ "SourceImage: $($_.SourceImage) | SourceProcessId: $($_.SourceProcessId) | SourceProcessGuid: $($_.SourceProcessGuid)" }},
             @{Name="Event"; Expression={ "Remote Thread (8)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.SourceImage) [$($_.SourceProcessId)] ---> $($_.TargetImage) [$($_.TargetProcessId)]"
+                "TargetImage: $($_.TargetImage) | TargetProcessId: $($_.TargetProcessId) | TargetProcessGuid: $($_.TargetProcessGuid) | StartAddress: $($_.StartAddress) | StartModule: $($_.StartModule) | StartFunction: $($_.StartFunction)"
             }},
             HostName,
             EventId,

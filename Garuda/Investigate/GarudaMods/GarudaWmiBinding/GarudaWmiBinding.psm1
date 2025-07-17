@@ -14,10 +14,10 @@ function View-WmiBindingSummary {
     }
     end {
         $WmiBindingEvents | select-object UtcTime, Consumer, Filter, `
-            @{Name = "WmiBindingOperation"; Expression = { "{0} by {1}" -f $_.Operation, $_.User } } `
-        | sort-object WmiBindingOperation | Format-Table UtcTime, Consumer, Filter -GroupBy WmiBindingOperation -Autosize -Wrap `
+            @{Name = "WmiBindingInfo"; Expression = { "{0} by {1}" -f $_.Operation, $_.User } } `
+        | sort-object WmiBindingInfo | Format-Table UtcTime, Consumer, Filter -GroupBy WmiBindingInfo -Autosize -Wrap `
         | Out-String -stream | ForEach-Object {
-            if ($_ -match "WmiBindingOperation:.*") {
+            if ($_ -match "WmiBindingInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -76,7 +76,7 @@ function View-WmiBindingTimeline {
     End {
         $WmiBindingEvents | Select-Object UTCtime,
             User,
-            @{Name="Event"; Expression={ "WMI Binding $($_.Operation)" }},
+            @{Name="Event"; Expression={ "WMI Binding $($_.Operation) (21)" }},
             @{Name="EventDetails"; Expression={ "Consumer: $($_.Consumer) | Filter: $($_.Filter)" }} |
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
@@ -100,7 +100,7 @@ function View-WmiBindingTimelineList {
         $WmiBindingEvents | Select-Object UTCtime,
             HostName,
             User,
-            @{Name="Event"; Expression={ "WMI Binding $($_.Operation)" }},
+            @{Name="Event"; Expression={ "WMI Binding $($_.Operation) (21)" }},
             @{Name="EventDetails"; Expression={ "Consumer: $($_.Consumer) | Filter: $($_.Filter)" }} |
             Sort-Object UTCtime | Format-List
     }

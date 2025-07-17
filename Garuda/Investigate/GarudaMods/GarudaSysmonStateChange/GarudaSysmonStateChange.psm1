@@ -1,4 +1,4 @@
-function View-QuickSysmonServiceStateChange {
+function View-SysmonServiceStateChangeTimeline {
     [CmdletBinding(PositionalBinding = $false)]
     param (
         [Parameter(Mandatory = $false, ValueFromPipeline)]
@@ -13,7 +13,37 @@ function View-QuickSysmonServiceStateChange {
         }
     }
     End {
-        $SysmonServiceStateChangeEvents | format-table hostname, UTCTime, State, Version, Schemaversion -Autosize -Wrap
+        $SysmonServiceStateChangeEvents | Select-Object `
+            UTCtime,
+            @{Name="GUID"; Expression={"-"}},
+            @{Name="Process"; Expression={"-"}},
+            @{Name="Event"; Expression={"Sysmon State (4)"}},
+            @{Name="EventDetails"; Expression={"State: $($_.State) | Version: $($_.Version) | SchemaVersion: $($_.SchemaVersion)"}} | 
+            Sort-Object UTCtime | Format-Table -AutoSize -Wrap
+    }
+}
+
+function View-SysmonServiceStateChangeTimelineList {
+    [CmdletBinding(PositionalBinding = $false)]
+    param (
+        [Parameter(Mandatory = $false, ValueFromPipeline)]
+        [psobject] $Event
+    )
+    Begin { 
+        $SysmonServiceStateChangeEvents = @() 
+    }
+    Process {
+        If ($Event.EventId -eq 4) {
+            $SysmonServiceStateChangeEvents += $Event
+        }
+    }
+    End {
+        $SysmonServiceStateChangeEvents | Select-Object `
+            'UTCtime',
+            'HostName',
+            @{Name="Event"; Expression={"Sysmon State (4)"}},
+            @{Name="EventDetails"; Expression={"State: $($_.State) | Version: $($_.Version) | SchemaVersion: $($_.SchemaVersion)"}} |
+            Sort-Object UTCtime
     }
 }
 
@@ -32,11 +62,17 @@ function View-SysmonServiceStateChangeSummary {
         }
     }
     end {
-        $SysmonServiceStateChangeEvents | select-object HostName,UtcTime, Version, SchemaVersion, `
-        @{Name = "SysmonServiceState"; Expression = { "{0}" -f $_.State }} `
-        | sort-object SysmonServiceState| Format-Table HostName, UtcTime,Version, SchemaVersion `
-        -GroupBy SysmonServiceState -Autosize -Wrap | Out-String -stream | ForEach-Object {
-            if ($_ -match "SysmonServiceState:.*") {
+        $SysmonServiceStateChangeEvents | select-object @{
+            Name = "ProcessInfo"
+            Expression = { "Sysmon Service State Change" }
+        }, UTCtime, @{
+            Name = "Event"
+            Expression = { "Sysmon State (4)" }
+        }, @{
+            Name = "EventDetails"
+            Expression = { "State: $($_.State) | Version: $($_.Version) | SchemaVersion: $($_.SchemaVersion)" }
+        } | sort-object ProcessInfo, UTCtime | Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -Autosize -Wrap | Out-String -stream | ForEach-Object {
+            if ($_ -match "ProcessInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -63,10 +99,10 @@ function View-SysmonServiceStateChangeInteractivetable {
     end {
         # Create a view with the standard first 5 fields, then Event ID 4 specific fields
         $SysmonServiceStateChangeEvents | Select-Object UTCtime,
-            @{Name="GUID"; Expression={ "" }},
-            @{Name="Process"; Expression={ "" }},
+            @{Name="GUID"; Expression={ "-" }},
+            @{Name="Process"; Expression={ "-" }},
             @{Name="Event"; Expression={ "Sysmon State (4)" }},
-            @{Name="EventDetails"; Expression={ $_.State }},
+            @{Name="EventDetails"; Expression={ "State: $($_.State) | Version: $($_.Version) | SchemaVersion: $($_.SchemaVersion)" }},
             # Event ID 4 specific fields
             HostName,
             EventId, 
@@ -122,7 +158,7 @@ function Investigate-SysmonServiceStateChange {
         [string[]] $LogFile,
 
         [parameter(Mandatory = $false)]
-        [ValidateSet("Detailed","Summary","InteractiveTable")]
+        [ValidateSet("Detailed","Timeline","TimelineList","Summary","InteractiveTable")]
         [string] $view = "Detailed"
     )
 
@@ -195,6 +231,14 @@ function Investigate-SysmonServiceStateChange {
             $Query
             break
         }
+        "Timeline" {
+            $Query | View-SysmonServiceStateChangeTimeline
+            break
+        }
+        "TimelineList" {
+            $Query | View-SysmonServiceStateChangeTimelineList
+            break
+        }
         "Summary" {
             $Query | View-SysmonServiceStateChangeSummary
             break
@@ -209,6 +253,8 @@ function Investigate-SysmonServiceStateChange {
 # Export module members
 Export-ModuleMember -Function @(
     'Investigate-SysmonServiceStateChange',
+    'View-SysmonServiceStateChangeTimeline',
+    'View-SysmonServiceStateChangeTimelineList',
     'View-SysmonServiceStateChangeSummary',
     'View-SysmonServiceStateChangeInteractivetable'
 )

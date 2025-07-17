@@ -47,9 +47,9 @@ function View-FileDeleteSummary {
         }
     }
     end {
-        $FileDeleteEvents | select-object TargetFilename, Archived, IsExecutable, `
-            @{Name = "Process"; Expression = { "{0} (PID: {1}) - {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid } } `
-        | sort-object Process | Format-Table TargetFilename, Archived, IsExecutable -GroupBy Process -Autosize -Wrap `
+        $FileDeleteEvents | select-object UtcTime, TargetFilename, Archived, IsExecutable, `
+            @{Name = "Process"; Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" } } `
+        | sort-object Process | Format-Table UtcTime, TargetFilename, Archived, IsExecutable -GroupBy Process -Autosize -Wrap `
         | Out-String -stream | ForEach-Object {
             if ($_ -match "Process:.*") {
                 write-host $_ -ForegroundColor green
@@ -78,9 +78,9 @@ function View-FileDeleteInteractiveTable {
     end {
         $FileDeleteEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Delete (23)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [Archived: $($_.Archived)] [Executable: $($_.IsExecutable)]" }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Archived: $($_.Archived) | Executable: $($_.IsExecutable)" }},
             # Event identification
             EventId,
             EventType,
@@ -127,9 +127,9 @@ function View-FileDeleteTimeline {
         $FileDeleteEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "File Delete (23)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [Archived: $($_.Archived)] [Executable: $($_.IsExecutable)]" }} | 
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Archived: $($_.Archived) | Executable: $($_.IsExecutable)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -154,9 +154,9 @@ function View-FileDeleteTimelineList {
             HostName,
             User,
             ProcessId,
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Delete (23)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [Archived: $($_.Archived)] [Executable: $($_.IsExecutable)]" }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Archived: $($_.Archived) | Executable: $($_.IsExecutable)" }},
             Hashes | 
             Sort-Object UTCtime
     }

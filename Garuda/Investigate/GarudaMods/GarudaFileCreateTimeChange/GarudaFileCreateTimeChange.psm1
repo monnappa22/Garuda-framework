@@ -17,14 +17,14 @@ function View-FileCreateTimeChangeSummary {
             $FileCreateTimeChangeEvents | Select-Object @{
                 Name = "ProcessInfo"
                 Expression = { 
-                    "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid
+                    "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)"
                 }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "File Time Change (2)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { $_.TargetFilename }
+                Expression = { "TargetFilename: $($_.TargetFilename) | CreationUtcTime: $($_.CreationUtcTime) | PreviousCreationUtcTime: $($_.PreviousCreationUtcTime)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -57,9 +57,9 @@ function View-FileCreateTimeChangeTimeline {
         $FileCreateTimeChangeEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "File Time Change (2)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetFilename }} | 
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | CreationUtcTime: $($_.CreationUtcTime) | PreviousCreationUtcTime: $($_.PreviousCreationUtcTime)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -83,11 +83,9 @@ function View-FileCreateTimeChangeTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Time Change (2)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetFilename }},
-            @{Name="TimeInfo"; Expression={ "Previous: $($_.PreviousCreationUtcTime) -> New: $($_.CreationUtcTime)" }} | 
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | CreationUtcTime: $($_.CreationUtcTime) | PreviousCreationUtcTime: $($_.PreviousCreationUtcTime)" }} | 
             Sort-Object UTCtime | Format-List
     }
 }
@@ -110,9 +108,9 @@ function View-FileCreateTimeChangeInteractivetable {
         # Create a view with the standard first 5 fields, then Event ID 2 specific fields
         $FileCreateTimeChangeEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Time Change (2)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetFilename }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | CreationUtcTime: $($_.CreationUtcTime) | PreviousCreationUtcTime: $($_.PreviousCreationUtcTime)" }},
             # Event ID 2 specific fields
             HostName,
             ProcessGuid,

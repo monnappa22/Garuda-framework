@@ -24,10 +24,10 @@ function View-DnsQuerySummary {
     
     End {
         $DnsEvents | select-object UtcTime, User, QueryName, QueryResults, QueryStatus,
-            @{Name = "Process"; Expression = { "{0} (PID: {1}) - {2}" -f $_.ProcessName, $_.ProcessId, $_.ProcessGuid } } |
-        sort-object Process | Format-Table UtcTime, User, QueryName, QueryResults, QueryStatus -GroupBy Process -Autosize -Wrap |
+            @{Name = "ProcessInfo"; Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" } } |
+        sort-object ProcessInfo | Format-Table UtcTime, User, QueryName, QueryResults, QueryStatus -GroupBy ProcessInfo -Autosize -Wrap |
         Out-String -stream | ForEach-Object {
-            if ($_ -match "Process:.*") {
+            if ($_ -match "ProcessInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -57,9 +57,9 @@ function View-DnsQueryInteractiveTable {
     End {
         $DnsEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "DNS Query (22)" }},
-            @{Name="EventDetails"; Expression={ "$($_.QueryName) [$($_.QueryResults)] [Status: $($_.QueryStatus)]" }},
+            @{Name="EventDetails"; Expression={ "QueryName: $($_.QueryName) | QueryResults: $($_.QueryResults) | QueryStatus: $($_.QueryStatus)" }},
             # Event identification
             EventId,
             EventType,
@@ -102,10 +102,10 @@ function View-DnsQueryTimeline {
     End {
         $DnsEvents | Select-Object `
             UTCtime,
-            ProcessGuid,
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="GUID"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "DNS Query (22)" }},
-            @{Name="EventDetails"; Expression={ "$($_.QueryName) [$($_.QueryResults)] [Status: $($_.QueryStatus)]" }} | 
+            @{Name="EventDetails"; Expression={ "QueryName: $($_.QueryName) | QueryResults: $($_.QueryResults) | QueryStatus: $($_.QueryStatus)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -132,10 +132,9 @@ function View-DnsQueryTimelineList {
             UTCtime,
             HostName,
             User,
-            @{Name="ProcessId"; Expression={ $_.ProcessId }},
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "DNS Query (22)" }},
-            @{Name="EventDetails"; Expression={ "$($_.QueryName) [$($_.QueryResults)] [Status: $($_.QueryStatus)]" }} | 
+            @{Name="EventDetails"; Expression={ "QueryName: $($_.QueryName) | QueryResults: $($_.QueryResults) | QueryStatus: $($_.QueryStatus)" }} | 
             Sort-Object UTCtime | Format-List
     }
 }

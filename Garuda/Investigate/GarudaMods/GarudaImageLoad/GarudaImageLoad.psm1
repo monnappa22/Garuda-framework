@@ -15,15 +15,14 @@ function View-ImageLoadTimeline {
     End {
         $ImageLoadEvents | Select-Object `
             UTCtime,
-            ProcessGuid,
-            ProcessName,
+            @{Name="GUID"; Expression={$_.ProcessGuid}},
+            @{Name="Process"; Expression={"$($_.ProcessName)($($_.ProcessId))"}},
             @{Name="Event"; Expression={ "Image Load (7)" }},
             @{Name="EventDetails"; Expression={ 
-                $modulePath = $_.ImageLoaded
                 if ($_.Signed) {
-                    "$modulePath [Signed: $($_.Signed)] [Status: $($_.SignatureStatus)] [Signature: $($_.Signature)]"
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
                 } else {
-                    $modulePath
+                    "ImageLoaded: $($_.ImageLoaded)"
                 }
             }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
@@ -49,14 +48,16 @@ function View-ImageLoadTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Image Load (7)" }},
             @{Name="EventDetails"; Expression={ 
-                $modulePath = $_.ImageLoaded
-                "$modulePath [Signed: $($_.Signed)] [Status: $($_.SignatureStatus)] [Signature: $($_.Signature)]"
+                if ($_.Signed) {
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
+                } else {
+                    "ImageLoaded: $($_.ImageLoaded)"
+                }
             }},
-            @{Name="Hashes"; Expression={ $_.Hashes }} |
+            Hashes | 
             Sort-Object UTCtime
     }
 }
@@ -77,15 +78,14 @@ function View-ImageLoadSummary {
     }
     end {
         $ImageLoadEvents | Select-Object `
-            @{Name = "ProcessInfo"; Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }},
+            @{Name = "ProcessInfo"; Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             UTCtime,
             @{Name = "Event"; Expression = { "Image Load (7)" }},
             @{Name = "EventDetails"; Expression = { 
-                $modulePath = $_.ImageLoaded
-                if ($_.Signed -eq "true") {
-                    "$modulePath [Signed: $($_.Signed)] [Status: $($_.SignatureStatus)] [Signature: $($_.Signature)]"
+                if ($_.Signed) {
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
                 } else {
-                    $modulePath
+                    "ImageLoaded: $($_.ImageLoaded)"
                 }
             }} |
             Sort-Object ProcessInfo, UTCtime | 
@@ -119,9 +119,15 @@ function View-ImageLoadInteractiveTable {
         # Create a view with the standard first 5 fields, then Event ID 7 specific fields
         $ImageLoadEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Image Load (7)" }},
-            @{Name="EventDetails"; Expression={ $_.ImageLoaded }},
+            @{Name="EventDetails"; Expression={ 
+                if ($_.Signed) {
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
+                } else {
+                    "ImageLoaded: $($_.ImageLoaded)"
+                }
+            }},
             HostName,
             EventId,
             EventType,

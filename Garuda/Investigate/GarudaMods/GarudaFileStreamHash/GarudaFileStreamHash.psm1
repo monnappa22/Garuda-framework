@@ -15,13 +15,13 @@ function View-FileStreamHashSummary {
     end {
         $FileStreamEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "FileStreamHash (15)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { "$($_.TargetFilename) [$($_.Contents)] [MD5: $($_.MD5)]" }
+                Expression = { "TargetFilename: $($_.TargetFilename) | Contents: $($_.Contents) | MD5: $($_.MD5)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -52,9 +52,9 @@ function View-FileStreamHashInteractiveTable {
     end {
         $FileStreamEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "FileStreamHash (15)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [$($_.Contents)] [MD5: $($_.MD5)]" }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Contents: $($_.Contents) | MD5: $($_.MD5)" }},
             # Event identification
             EventId, 
             EventType,
@@ -101,10 +101,10 @@ function View-FileStreamHashTimeline {
     End {
         $FileStreamEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="ProcessGuid"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "FileStreamHash (15)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [$($_.Contents)] [MD5: $($_.MD5)]" }} | 
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Contents: $($_.Contents) | MD5: $($_.MD5)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -128,16 +128,9 @@ function View-FileStreamHashTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ 
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "FileStreamHash (15)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [$($_.Contents)] [MD5: $($_.MD5)]" }} | 
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Contents: $($_.Contents) | MD5: $($_.MD5)" }} | 
             Sort-Object UTCtime
     }
 }

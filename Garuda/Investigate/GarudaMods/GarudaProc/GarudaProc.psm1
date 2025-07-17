@@ -17,7 +17,7 @@ function View-ProcSummary {
             $ProcEvents | Select-Object @{
                 Name = "ProcessInfo"
                 Expression = { 
-                    "{0} (PID: {1}) GUID: {2}" -f $_.ParentImage, $_.ParentProcessId, $_.ParentProcessGuid
+                    "ParentImage: $($_.ParentImage) | ParentProcessId: $($_.ParentProcessId) | ParentProcessGuid: $($_.ParentProcessGuid)"
                 }
             }, UTCtime, @{
                 Name = "Event"
@@ -26,9 +26,9 @@ function View-ProcSummary {
                 Name = "EventDetails"
                 Expression = { 
                     if ($_.CommandLine) {
-                        "$($_.Image) [$($_.ProcessGuid)] [CommandLine: $($_.CommandLine)]"
+                        "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | CommandLine: $($_.CommandLine)"
                     } else {
-                        "$($_.Image) [$($_.ProcessGuid)]"
+                        "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)"
                     }
                 }
             } | Sort-Object ProcessInfo, UTCtime | 
@@ -63,14 +63,16 @@ function View-ProcInteractivetable {
         # Create a custom view with the standard first 5 fields, then Process Create (Event ID 1) relevant fields
         $ProcEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ParentProcessGuid }},
-            @{Name="Process"; Expression={ $_.ParentImage }},
+            @{Name="Process"; Expression={ 
+                if ($_.ParentCommandLine) {
+                    "ParentImage: $($_.ParentImage) | ParentProcessId: $($_.ParentProcessId) | ParentProcessGuid: $($_.ParentProcessGuid) | ParentCommandLine: $($_.ParentCommandLine)"
+                } else {
+                    "ParentImage: $($_.ParentImage) | ParentProcessId: $($_.ParentProcessId) | ParentProcessGuid: $($_.ParentProcessGuid)"
+                }
+            }},
             @{Name="Event"; Expression={ "Process Create (1)" }},
             @{Name="EventDetails"; Expression={ 
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [CommandLine: $($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
+                "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | CommandLine: $($_.CommandLine) | IntegrityLevel: $($_.IntegrityLevel)"
             }},
             # Event ID 1 specific fields
             HostName,
@@ -293,10 +295,10 @@ function View-ProcTimeline {
         $ProcEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={ $_.ParentProcessGuid }},
-            @{Name="Process"; Expression={ $_.ParentProcessName }},
+            @{Name="Process"; Expression={ "$($_.ParentProcessName)($($_.ParentProcessId))" }},
             @{Name="Event"; Expression={ "Process Creation (1)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.Image) [PID: $($_.ProcessId)] [CommandLine: $($_.CommandLine)]" 
+                "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | CommandLine: $($_.CommandLine)" 
             }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
@@ -321,17 +323,16 @@ function View-ProcTimelineList {
             UTCtime,
             HostName,
             User,
-            @{Name="ProcessId"; Expression={ $_.ParentProcessId }},
             @{Name="Process"; Expression={ 
                 if ($_.ParentCommandLine) {
-                    "$($_.ParentImage) [$($_.ParentProcessGuid)] [$($_.ParentCommandLine)]"
+                    "ParentImage: $($_.ParentImage) | ParentProcessId: $($_.ParentProcessId) | ParentProcessGuid: $($_.ParentProcessGuid) | ParentCommandLine: $($_.ParentCommandLine)"
                 } else {
-                    "$($_.ParentImage) [$($_.ParentProcessGuid)]"
+                    "ParentImage: $($_.ParentImage) | ParentProcessId: $($_.ParentProcessId) | ParentProcessGuid: $($_.ParentProcessGuid)"
                 }
             }},
             @{Name="Event"; Expression={ "Process Creation (1)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.Image) [PID: $($_.ProcessId)] [CommandLine: $($_.CommandLine)] [Integrity: $($_.IntegrityLevel)]"
+                "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | CommandLine: $($_.CommandLine) | IntegrityLevel: $($_.IntegrityLevel)"
             }},
             Hashes | 
             Sort-Object UTCtime | Format-List

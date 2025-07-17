@@ -13,17 +13,25 @@ function View-PipeCreateSummary {
         }
     }
     end {
-        $PipeEvents | select-object PipeName, User, `
-            @{Name = "Process"; Expression = { "{0} (PID: {1}) - {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid } } `
-        | sort-object Process | Format-Table PipeName, User -GroupBy Process -Autosize -Wrap `
-        | Out-String -stream | ForEach-Object {
-            if ($_ -match "Process:.*") {
-                write-host $_ -ForegroundColor green
+        $PipeEvents | Select-Object @{
+                Name = "ProcessInfo"
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
+            }, UTCtime, @{
+                Name = "Event"
+                Expression = { "Pipe Created (17)" }
+            }, @{
+                Name = "EventDetails"
+                Expression = { "PipeName: $($_.PipeName)" }
+            } | Sort-Object ProcessInfo, UTCtime | 
+            Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
+            Out-String -stream | ForEach-Object {
+                if ($_ -match "ProcessInfo:.*") {
+                    write-host $_ -ForegroundColor green
+                }
+                else {
+                    write-host $_
+                }
             }
-            else {
-                write-host $_
-            }
-        }
     }
 }
 
@@ -44,9 +52,9 @@ function View-PipeCreateInteractiveTable {
     end {
         $PipeEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Pipe Created (17)" }},
-            @{Name="EventDetails"; Expression={ $_.PipeName }},
+            @{Name="EventDetails"; Expression={ "PipeName: $($_.PipeName)" }},
             # Event identification
             EventId,
             EventType,
@@ -84,10 +92,10 @@ function View-PipeCreateTimeline {
     End {
         $PipeEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="ProcessGuid"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "Pipe Created (17)" }},
-            @{Name="EventDetails"; Expression={ $_.PipeName }} | 
+            @{Name="EventDetails"; Expression={ "PipeName: $($_.PipeName)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -111,11 +119,10 @@ function View-PipeCreateTimelineList {
             UTCtime,
             HostName,
             User,
-            @{Name="ProcessId"; Expression={ $_.ProcessId }},
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
-            @{Name="Event"; Expression={ "Pipe Created" }},
-            @{Name="EventDetails"; Expression={ $_.PipeName }} |
-            Sort-Object UTCtime | Format-List
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
+            @{Name="Event"; Expression={ "Pipe Created (17)" }},
+            @{Name="EventDetails"; Expression={ "PipeName: $($_.PipeName)" }} |
+            Sort-Object UTCtime
     }
 }
 

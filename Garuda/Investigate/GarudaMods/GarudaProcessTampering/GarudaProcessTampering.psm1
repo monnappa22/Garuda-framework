@@ -35,11 +35,12 @@ function View-ProcessTamperingSummary {
         }
     }
     end {
-        $ProcessTamperingEvents | select-object UTCtime, User, Type, Image, `
-            @{Name = "Process"; Expression = { "PID: $($_.ProcessId) [$($_.ProcessGuid)]" } } `
-        | sort-object Process | Format-Table UTCtime, User, Type, Image -GroupBy Process -Autosize -Wrap `
+        $ProcessTamperingEvents | select-object UTCtime, User, Type, `
+            @{Name = "ProcessInfo"; Expression = { "(-) - GUID: (-)" } }, `
+            @{Name = "HollowedProcessDetails"; Expression = { "Image: $($_.Image) [ProcessId: $($_.ProcessId)] [ProcessGuid: $($_.ProcessGuid)]" } } `
+        | sort-object HollowedProcessDetails | Format-Table UTCtime, User, Type, HollowedProcessDetails -GroupBy ProcessInfo -Autosize -Wrap `
         | Out-String -stream | ForEach-Object {
-            if ($_ -match "Process:.*") {
+            if ($_ -match "ProcessInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -65,10 +66,10 @@ function View-ProcessTamperingInteractiveTable {
     }
     end {
         $ProcessTamperingEvents | Select-Object UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="GUID"; Expression={ "-" }},
+            @{Name="Process"; Expression={ "-" }},
             @{Name="Event"; Expression={ "Process Tampering (25)" }},
-            @{Name="EventDetails"; Expression={ "$($_.Image) - [$($_.Type)]" }},
+            @{Name="EventDetails"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | Type: $($_.Type)" }},
             # Event identification
             EventId,
             EventType,
@@ -106,10 +107,10 @@ function View-ProcessTamperingTimeline {
     end {
         $ProcessTamperingEvents | Select-Object `
             UTCtime,
-            ProcessGuid,
-            ProcessId,
+            @{Name="GUID"; Expression={ "-" }},
+            @{Name="Process"; Expression={ "-" }},
             @{Name="Event"; Expression={ "Process Tampering (25)" }},
-            @{Name="EventDetails"; Expression={ "$($_.Image) - [$($_.Type)]" }} | 
+            @{Name="EventDetails"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | Type: $($_.Type)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -133,10 +134,9 @@ function View-ProcessTamperingTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            ProcessGuid,
+            @{Name="Process"; Expression={ "-" }},
             @{Name="Event"; Expression={ "Process Tampering (25)" }},
-            @{Name="EventDetails"; Expression={ "$($_.Image) - [$($_.Type)]" }} | 
+            @{Name="EventDetails"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid) | Type: $($_.Type)" }} | 
             Sort-Object UTCtime | Format-List
     }
 }

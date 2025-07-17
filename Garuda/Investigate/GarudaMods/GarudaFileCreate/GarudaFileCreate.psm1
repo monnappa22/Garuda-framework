@@ -13,10 +13,10 @@ function View-FileCreateTimeline {
     End {
         $FileCreateEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="ProcessGuid"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "File Create (11)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetFilename }} |
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename)" }} |
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -38,10 +38,9 @@ function View-FileCreateTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Create (11)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetFilename }} |
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename)" }} |
             Sort-Object UTCtime
     }
 }
@@ -61,13 +60,13 @@ function View-FileCreateSummary {
     end {
         $FileCreateEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "File Create (11)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { $_.TargetFilename }
+                Expression = { "TargetFilename: $($_.TargetFilename)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -98,9 +97,9 @@ function View-FileCreateInteractiveTable {
     end {
         $FileCreateEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Create (11)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetFilename }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename)" }},
             HostName,
             EventId,
             EventType,

@@ -15,13 +15,13 @@ function View-RegRenameSummary {
     end {
         $RegEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "Reg $($_.EventType) (14)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { "$($_.TargetObject) -> $($_.NewName)" }
+                Expression = { "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue) | RenamedRegKeyValue: $($_.RenamedRegKeyValue)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -52,9 +52,9 @@ function View-RegRenameInteractiveTable {
     end {
         $RegEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Reg $($_.EventType) (14)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetObject) -> $($_.NewName)" }},
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue) | RenamedRegKeyValue: $($_.RenamedRegKeyValue)" }},
             # Event identification
             EventId, 
             EventType,
@@ -96,10 +96,10 @@ function View-RegRenameTimeline {
     End {
         $RegEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="ProcessGuid"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "Reg $($_.EventType) (14)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetObject) -> $($_.NewName)" }} | 
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue) | RenamedRegKeyValue: $($_.RenamedRegKeyValue)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -123,19 +123,12 @@ function View-RegRenameTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ 
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Reg $($_.EventType) (14)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetObject) -> $($_.NewName)" }} | 
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue) | RenamedRegKeyValue: $($_.RenamedRegKeyValue)" }} | 
             Sort-Object UTCtime |
             # Explicitly select only the fields we want to display to prevent unexpected fields
-            Select-Object UTCtime, HostName, User, ProcessId, Process, Event, EventDetails
+            Select-Object UTCtime, HostName, User, Process, Event, EventDetails
     }
 }
 

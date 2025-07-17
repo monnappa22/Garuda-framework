@@ -14,7 +14,7 @@ function View-FileBlockShreddingSummary {
     }
     end {
         $FileBlockShreddingEvents | select-object UTCtime, TargetFilename, MD5, IsExecutable, `
-            @{Name = "Process"; Expression = { "{0} (PID: {1}) - {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid } } `
+            @{Name = "Process"; Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" } } `
         | sort-object Process | Format-Table UTCtime, TargetFilename, MD5, IsExecutable -GroupBy Process -Autosize -Wrap `
         | Out-String -stream | ForEach-Object {
             if ($_ -match "Process:.*") {
@@ -44,9 +44,9 @@ function View-FileBlockShreddingInteractiveTable {
     end {
         $FileBlockShreddingEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Block Shredding (28)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [Executable: $($_.IsExecutable)]" }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Executable: $($_.IsExecutable)" }},
             # Event identification
             EventId,
             EventType,
@@ -93,9 +93,9 @@ function View-FileBlockShreddingTimeline {
         $FileBlockShreddingEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "File Block Shredding (28)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [Executable: $($_.IsExecutable)]" }} | 
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Executable: $($_.IsExecutable)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -119,10 +119,9 @@ function View-FileBlockShreddingTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "File Block Shredding (28)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetFilename) [Executable: $($_.IsExecutable)]" }},
+            @{Name="EventDetails"; Expression={ "TargetFilename: $($_.TargetFilename) | Executable: $($_.IsExecutable)" }},
             Hashes | 
             Sort-Object UTCtime
     }

@@ -21,7 +21,7 @@ function View-ServiceConfigSummary {
                 Expression = { "Service Configuration Change (16)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { "$($_.Configuration) [Hash: $($_.ConfigurationFileHash)]" }
+                Expression = { "Configuration: $($_.Configuration) | ConfigurationFileHash: $($_.ConfigurationFileHash)" }
             } | Sort-Object ConfigInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ConfigInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -54,7 +54,7 @@ function View-ServiceConfigInteractiveTable {
             @{Name="GUID"; Expression={ "" }},
             @{Name="Process"; Expression={ "" }},
             @{Name="Event"; Expression={ "Service Configuration Change (16)" }},
-            @{Name="EventDetails"; Expression={ "$($_.Configuration) [Hash: $($_.ConfigurationFileHash)]" }},
+            @{Name="EventDetails"; Expression={ "Configuration: $($_.Configuration) | ConfigurationFileHash: $($_.ConfigurationFileHash)" }},
             # Event identification
             EventId,
             EventType,
@@ -89,7 +89,7 @@ function View-ServiceConfigTimeline {
             @{Name="GUID"; Expression={ "" }},
             @{Name="Process"; Expression={ "" }},
             @{Name="Event"; Expression={ "Service Configuration Change (16)" }},
-            @{Name="EventDetails"; Expression={ "$($_.Configuration) [Hash: $($_.ConfigurationFileHash)]" }} | 
+            @{Name="EventDetails"; Expression={ "Configuration: $($_.Configuration) | ConfigurationFileHash: $($_.ConfigurationFileHash)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -113,7 +113,7 @@ function View-ServiceConfigTimelineList {
             UTCtime,
             HostName,
             @{Name="Event"; Expression={ "Service Configuration Change (16)" }},
-            @{Name="EventDetails"; Expression={ "$($_.Configuration) [Hash: $($_.ConfigurationFileHash)]" }} | 
+            @{Name="EventDetails"; Expression={ "Configuration: $($_.Configuration) | ConfigurationFileHash: $($_.ConfigurationFileHash)" }} | 
             Sort-Object UTCtime
     }
 }

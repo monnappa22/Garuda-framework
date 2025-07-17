@@ -15,10 +15,10 @@ function View-ProcTerminatedTimeline {
     End {
         $ProcTerminatedEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={$_.ProcessGuid}},
-            @{Name="Process"; Expression={$_.ProcessName}},
+            @{Name="GUID"; Expression={"-"}},
+            @{Name="Process"; Expression={"-"}},
             @{Name="Event"; Expression={"Process Terminate (5)"}},
-            @{Name="EventDetails"; Expression={$_.Image}} | 
+            @{Name="EventDetails"; Expression={"Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)"}} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -42,16 +42,9 @@ function View-ProcTerminatedTimelineList {
             'UTCtime',
             'HostName',
             @{Name="User"; Expression={$_.User}},
-            @{Name="ProcessId"; Expression={$_.ProcessId}},
-            @{Name="Process"; Expression={
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
+            @{Name="Process"; Expression={"-"}},
             @{Name="Event"; Expression={"Process Terminate (5)"}},
-            @{Name="EventDetails"; Expression={$_.Image}} |
+            @{Name="EventDetails"; Expression={"Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)"}} |
             Sort-Object UTCtime
     }
 }
@@ -74,13 +67,13 @@ function View-ProcTerminatedSummary {
         if ($ProcTerminatedEvents.Count -gt 0) {
             $ProcTerminatedEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "(-) - GUID: (-)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "Process Terminate (5)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { $_.Image }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -112,10 +105,10 @@ function View-ProcTerminatedInteractivetable {
     end {
         # Create a custom view with the standard first 5 fields, then Event ID 5 specific fields
         $ProcTerminatedEvents | Select-Object UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="GUID"; Expression={ "-" }},
+            @{Name="Process"; Expression={ "-" }},
             @{Name="Event"; Expression={ "Process Terminate (5)" }},
-            @{Name="EventDetails"; Expression={ $_.Image }},
+            @{Name="EventDetails"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             # Event ID 5 specific fields
             HostName,
             EventId, 

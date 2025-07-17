@@ -15,10 +15,10 @@ function View-RegSetValueTimeline {
     End {
         $RegEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="ProcessGuid"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "Reg Value Set (13)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetObject) = $($_.Details)" }} | 
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegValueName: $($_.RegValueName) | RegValueData: $($_.RegValueData)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -42,16 +42,9 @@ function View-RegSetValueTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ 
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Reg Value Set (13)" }},
-            @{Name="EventDetails"; Expression={ "$($_.TargetObject) = $($_.Details)" }} | 
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegValueName: $($_.RegValueName) | RegValueData: $($_.RegValueData)" }} | 
             Sort-Object UTCtime
     }
 }
@@ -73,13 +66,13 @@ function View-RegSetValueSummary {
     end {
         $RegEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "Reg Value Set (13)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { "$($_.TargetObject) = $($_.Details)" }
+                Expression = { "RegKey: $($_.RegKey) | RegValueName: $($_.RegValueName) | RegValueData: $($_.RegValueData)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -110,10 +103,10 @@ function View-RegSetValueInteractiveTable {
     end {
         $RegEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Reg Value Set (13)" }},
             @{Name="EventDetails"; Expression={ 
-                "$($_.TargetObject) = $($_.Details)"
+                "RegKey: $($_.RegKey) | RegValueName: $($_.RegValueName) | RegValueData: $($_.RegValueData)"
             }},
             HostName,
             EventId,

@@ -15,10 +15,10 @@ function View-RawAccessTimeline {
     End {
         $RawAccessEvents | Select-Object `
             UTCtime,
-            ProcessGuid,
-            ProcessName,
+            @{Name="GUID"; Expression={$_.ProcessGuid}},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "Raw Access (9)" }},
-            @{Name="EventDetails"; Expression={ $_.Device }} | 
+            @{Name="EventDetails"; Expression={ "Device: $($_.Device)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -42,16 +42,9 @@ function View-RawAccessTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ 
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Raw Access (9)" }},
-            @{Name="EventDetails"; Expression={ $_.Device }} |
+            @{Name="EventDetails"; Expression={ "Device: $($_.Device)" }} |
             Sort-Object UTCtime
     }
 }
@@ -73,13 +66,13 @@ function View-RawAccessSummary {
     End {
         $RawAccessEvents | Select-Object @{
             Name = "ProcessInfo"
-            Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+            Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
         }, UTCtime, @{
             Name = "Event"
             Expression = { "Raw Access (9)" }
         }, @{
             Name = "EventDetails"
-            Expression = { $_.Device }
+            Expression = { "Device: $($_.Device)" }
         } | Sort-Object ProcessInfo, UTCtime | 
         Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
         Out-String -stream | ForEach-Object {
@@ -110,9 +103,9 @@ function View-RawAccessInteractiveTable {
     End {
         $RawAccessEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Raw Access Read (9)" }},
-            @{Name="EventDetails"; Expression={ $_.Device }},
+            @{Name="EventDetails"; Expression={ "Device: $($_.Device)" }},
             HostName,
             EventId,
             EventType,

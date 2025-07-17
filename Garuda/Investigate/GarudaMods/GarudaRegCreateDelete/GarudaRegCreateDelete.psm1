@@ -15,10 +15,10 @@ function View-RegCreateDeleteTimeline {
     End {
         $RegEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="ProcessGuid"; Expression={ $_.ProcessGuid }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "Reg $($_.EventType) (12)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetObject }} | 
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -42,16 +42,9 @@ function View-RegCreateDeleteTimelineList {
             UTCtime,
             HostName,
             User,
-            ProcessId,
-            @{Name="Process"; Expression={ 
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Reg $($_.EventType) (12)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetObject }} | 
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue)" }} | 
             Sort-Object UTCtime
     }
 }
@@ -73,13 +66,13 @@ function View-RegCreateDeleteSummary {
     end {
         $RegEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "Reg $($_.EventType) (12)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { $_.TargetObject }
+                Expression = { "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -110,9 +103,9 @@ function View-RegCreateDeleteInteractiveTable {
     end {
         $RegEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Reg $($_.EventType) (12)" }},
-            @{Name="EventDetails"; Expression={ $_.TargetObject }},
+            @{Name="EventDetails"; Expression={ "RegKey: $($_.RegKey) | RegKeyValue: $($_.RegKeyValue)" }},
             HostName,
             EventId,
             EventType,
@@ -150,6 +143,12 @@ function Investigate-RegCreateDeleteInfo {
 
         [parameter(Mandatory = $false)]
         [string] $EventType = $false,
+
+        [parameter(Mandatory = $false)]
+        [string] $RegKey = $false,
+
+        [parameter(Mandatory = $false)]
+        [string] $RegKeyValue = $false,
 
         [parameter(Mandatory = $false)]
         [string] $User = $false,
@@ -295,6 +294,14 @@ function Investigate-RegCreateDeleteInfo {
 
     if ($EventType -ne $false) {
         $BaseQuery = $BaseQuery | Where-Object {$_.EventType -like $EventType}
+    }
+
+    if ($RegKey -ne $false) {
+        $BaseQuery = $BaseQuery | Where-Object {$_.RegKey -like $RegKey}
+    }
+
+    if ($RegKeyValue -ne $false) {
+        $BaseQuery = $BaseQuery | Where-Object {$_.RegKeyValue -like $RegKeyValue}
     }
 
     if ($User -ne $false) {

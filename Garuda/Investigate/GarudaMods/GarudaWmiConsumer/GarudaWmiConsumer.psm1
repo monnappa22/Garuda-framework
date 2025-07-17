@@ -14,10 +14,10 @@ function View-WmiConsumerSummary {
     }
     end {
         $WmiConsumerEvents | select-object UtcTime, Name, Type, Destination, `
-            @{Name = "WmiConsumerOperation"; Expression = { "{0} by {1}" -f $_.Operation, $_.User } } `
-        | sort-object WmiConsumerOperation | Format-Table UtcTime, Name, Type, Destination -GroupBy WmiConsumerOperation -Autosize -Wrap `
+            @{Name = "WmiConsumerInfo"; Expression = { "{0} by {1}" -f $_.Operation, $_.User } } `
+        | sort-object WmiConsumerInfo | Format-Table UtcTime, Name, Type, Destination -GroupBy WmiConsumerInfo -Autosize -Wrap `
         | Out-String -stream | ForEach-Object {
-            if ($_ -match "WmiConsumerOperation:.*") {
+            if ($_ -match "WmiConsumerInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -44,7 +44,7 @@ function View-WmiConsumerInteractiveTable {
     end {
         $WmiConsumerEvents | Select-Object UTCtime,
             @{Name="Event"; Expression={ "WMI Consumer $($_.Operation) (20)" }},
-            @{Name="EventDetails"; Expression={ "Consumer: $($_.Name) | Type: $($_.Type) | Destination: $($_.Destination)" }},
+            @{Name="EventDetails"; Expression={ "Name: $($_.Name) | Type: $($_.Type) | Destination: $($_.Destination)" }},
             # Event identification
             EventId, 
             EventType,
@@ -79,7 +79,7 @@ function View-WmiConsumerTimeline {
             UTCtime,
             @{Name="User"; Expression={ $_.User }},
             @{Name="Event"; Expression={ "WMI Consumer $($_.Operation) (20)" }},
-            @{Name="EventDetails"; Expression={ "Consumer: $($_.Name) | Type: $($_.Type) | Destination: $($_.Destination)" }} | 
+            @{Name="EventDetails"; Expression={ "Name: $($_.Name) | Type: $($_.Type) | Destination: $($_.Destination)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -104,7 +104,7 @@ function View-WmiConsumerTimelineList {
             HostName,
             User,
             @{Name="Event"; Expression={ "WMI Consumer $($_.Operation) (20)" }},
-            @{Name="EventDetails"; Expression={ "Consumer: `"$($_.Name)`" | Type: $($_.Type) | Destination: `"$($_.Destination)`"" }} | 
+            @{Name="EventDetails"; Expression={ "Name: $($_.Name) | Type: $($_.Type) | Destination: $($_.Destination)" }} | 
             Sort-Object UTCtime | Format-List
     }
 }

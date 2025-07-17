@@ -16,10 +16,10 @@ Function View-NetTimeline {
         $NetEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={$_.ProcessGuid}},
-            @{Name="Process"; Expression={$_.ProcessName}},
+            @{Name="Process"; Expression={"$($_.ProcessName)($($_.ProcessId))"}},
             @{Name="Event"; Expression={"Network Connect (3)"}},
             @{Name="EventDetails"; Expression={ 
-                "($($_.SourceHostname)) $($_.SourceIp):$($_.SourcePort) ---> $($_.DestinationIp):$($_.DestinationPort) ($($_.DestinationHostname))"
+                "SourceHostname: $($_.SourceHostname) | SourceIp: $($_.SourceIp) | SourcePort: $($_.SourcePort) | DestinationIp: $($_.DestinationIp) | DestinationPort: $($_.DestinationPort) | DestinationHostname: $($_.DestinationHostname) | Protocol: $($_.Protocol) | Initiated: $($_.Initiated)"
             }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
@@ -44,17 +44,12 @@ Function View-NetTimelineList {
             'UTCtime',
             'HostName',
             @{Name="User"; Expression={$_.User}},
-            @{Name="ProcessId"; Expression={$_.ProcessId}},
             @{Name="Process"; Expression={
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
+                "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)"
             }},
             @{Name="Event"; Expression={"Network Connect (3)"}},
             @{Name="EventDetails"; Expression={ 
-                "($($_.SourceHostname)) $($_.SourceIp):$($_.SourcePort) ---> $($_.DestinationIp):$($_.DestinationPort) ($($_.DestinationHostname))"
+                "SourceHostname: $($_.SourceHostname) | SourceIp: $($_.SourceIp) | SourcePort: $($_.SourcePort) | DestinationIp: $($_.DestinationIp) | DestinationPort: $($_.DestinationPort) | DestinationHostname: $($_.DestinationHostname) | Protocol: $($_.Protocol) | Initiated: $($_.Initiated)"
             }} |
             Sort-Object UTCtime
     }
@@ -78,13 +73,13 @@ function View-NetSummary {
         if ($NetEvents.Count -gt 0) {
             $NetEvents | Select-Object @{
                 Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "Network Connect (3)" }
             }, @{
                 Name = "EventDetails"
-                Expression = { "($($_.SourceHostname)) $($_.SourceIp):$($_.SourcePort) ---> $($_.DestinationIp):$($_.DestinationPort) ($($_.DestinationHostname))" }
+                Expression = { "SourceHostname: $($_.SourceHostname) | SourceIp: $($_.SourceIp) | SourcePort: $($_.SourcePort) | DestinationIp: $($_.DestinationIp) | DestinationPort: $($_.DestinationPort) | DestinationHostname: $($_.DestinationHostname) | Protocol: $($_.Protocol) | Initiated: $($_.Initiated)" }
             } | Sort-Object ProcessInfo, UTCtime | 
             Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
@@ -117,10 +112,10 @@ function View-NetInteractivetable {
         # Create a view with the standard first 5 fields, then Event ID 3 specific fields
         $NetEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Network Connect (3)" }},
             @{Name="EventDetails"; Expression={ 
-                "($($_.SourceHostname)) $($_.SourceIp):$($_.SourcePort) ---> $($_.DestinationIp):$($_.DestinationPort) ($($_.DestinationHostname))"
+                "SourceHostname: $($_.SourceHostname) | SourceIp: $($_.SourceIp) | SourcePort: $($_.SourcePort) | DestinationIp: $($_.DestinationIp) | DestinationPort: $($_.DestinationPort) | DestinationHostname: $($_.DestinationHostname) | Protocol: $($_.Protocol) | Initiated: $($_.Initiated)"
             }},
             # Event ID 3 specific fields
             HostName,

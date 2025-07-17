@@ -15,14 +15,14 @@ Function View-DriverTimeline {
     End {
         $DriverEvents | Select-Object `
             UTCtime,
-            @{Name="GUID"; Expression={$_.ProcessGuid}},
-            @{Name="Process"; Expression={$_.ProcessName}},
+            @{Name="GUID"; Expression={"-"}},
+            @{Name="Process"; Expression={"-"}},
             @{Name="Event"; Expression={"Driver Load (6)"}},
             @{Name="EventDetails"; Expression={
                 if ($_.Signed) {
-                    "$($_.ImageLoaded) [Signed: $($_.Signed)] [Status: $($_.SignatureStatus)] [Signature: $($_.Signature)]"
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
                 } else {
-                    $_.ImageLoaded
+                    "ImageLoaded: $($_.ImageLoaded)"
                 }
             }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
@@ -47,21 +47,12 @@ Function View-DriverTimelineList {
         $DriverEvents | Select-Object `
             'UTCtime',
             'HostName',
-            @{Name="User"; Expression={$_.User}},
-            @{Name="ProcessId"; Expression={$_.ProcessId}},
-            @{Name="Process"; Expression={
-                if ($_.CommandLine) {
-                    "$($_.Image) [$($_.ProcessGuid)] [$($_.CommandLine)]"
-                } else {
-                    "$($_.Image) [$($_.ProcessGuid)]"
-                }
-            }},
             @{Name="Event"; Expression={"Driver Load (6)"}},
             @{Name="EventDetails"; Expression={
                 if ($_.Signed) {
-                    "$($_.ImageLoaded) [Signed: $($_.Signed)] [Status: $($_.SignatureStatus)] [Signature: $($_.Signature)]"
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
                 } else {
-                    $_.ImageLoaded
+                    "ImageLoaded: $($_.ImageLoaded)"
                 }
             }} |
             Sort-Object UTCtime
@@ -85,8 +76,8 @@ function View-DriverSummary {
     End {
         if ($DriverEvents.Count -gt 0) {
             $DriverEvents | Select-Object @{
-                Name = "ProcessInfo"
-                Expression = { "{0} (PID: {1}) GUID: {2}" -f $_.Image, $_.ProcessId, $_.ProcessGuid }
+                Name = "DriverInfo"
+                Expression = { "DriverName: $($_.DriverName) | DriverDir: $($_.DriverDir)" }
             }, UTCtime, @{
                 Name = "Event"
                 Expression = { "Driver Load (6)" }
@@ -94,15 +85,15 @@ function View-DriverSummary {
                 Name = "EventDetails"
                 Expression = { 
                     if ($_.Signed) {
-                        "$($_.ImageLoaded) [Signed: $($_.Signed)] [Status: $($_.SignatureStatus)] [Signature: $($_.Signature)]"
+                        "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
                     } else {
-                        $_.ImageLoaded
+                        "ImageLoaded: $($_.ImageLoaded)"
                     }
                 }
-            } | Sort-Object ProcessInfo, UTCtime | 
-            Format-Table UTCtime, Event, EventDetails -GroupBy ProcessInfo -AutoSize -Wrap |
+            } | Sort-Object DriverInfo, UTCtime | 
+            Format-Table UTCtime, Event, EventDetails -GroupBy DriverInfo -AutoSize -Wrap |
             Out-String -stream | ForEach-Object {
-                if ($_ -match "ProcessInfo:.*") {
+                if ($_ -match "DriverInfo:.*") {
                 write-host $_ -ForegroundColor green
             }
             else {
@@ -133,7 +124,13 @@ function View-DriverInteractiveTable {
             @{Name="GUID"; Expression={ "" }},
             @{Name="Process"; Expression={ "" }},
             @{Name="Event"; Expression={ "Driver Load (6)" }},
-            @{Name="EventDetails"; Expression={ $_.ImageLoaded }},
+            @{Name="EventDetails"; Expression={ 
+                if ($_.Signed) {
+                    "ImageLoaded: $($_.ImageLoaded) | Signed: $($_.Signed) | Status: $($_.SignatureStatus) | Signature: $($_.Signature)"
+                } else {
+                    "ImageLoaded: $($_.ImageLoaded)"
+                }
+            }},
             HostName,
             EventId,
             EventType,

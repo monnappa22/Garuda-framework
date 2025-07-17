@@ -24,7 +24,7 @@ function View-ClipboardChangeSummary {
     
     End {
         $ClipboardEvents | select-object UtcTime, User, ClientInfo, Archived,
-            @{Name = "Process"; Expression = { "{0} (PID: {1}) - {2}" -f $_.ProcessName, $_.ProcessId, $_.ProcessGuid } } |
+            @{Name = "Process"; Expression = { "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" } } |
         sort-object Process | Format-Table UtcTime, User, ClientInfo, Archived -GroupBy Process -Autosize -Wrap |
         Out-String -stream | ForEach-Object {
             if ($_ -match "Process:.*") {
@@ -57,9 +57,9 @@ function View-ClipboardChangeInteractiveTable {
     End {
         $ClipboardEvents | Select-Object UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.Image }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Clipboard Change (24)" }},
-            @{Name="EventDetails"; Expression={ "$($_.ClientInfo) [Archived: $($_.Archived)]" }},
+            @{Name="EventDetails"; Expression={ "ClientInfo: $($_.ClientInfo) | Archived: $($_.Archived)" }},
             # Event identification
             EventId,
             EventType,
@@ -108,9 +108,9 @@ function View-ClipboardChangeTimeline {
         $ClipboardEvents | Select-Object `
             UTCtime,
             @{Name="GUID"; Expression={ $_.ProcessGuid }},
-            @{Name="Process"; Expression={ $_.ProcessName }},
+            @{Name="Process"; Expression={ "$($_.ProcessName)($($_.ProcessId))" }},
             @{Name="Event"; Expression={ "Clipboard Change (24)" }},
-            @{Name="EventDetails"; Expression={ "$($_.ClientInfo) [Archived: $($_.Archived)]" }} | 
+            @{Name="EventDetails"; Expression={ "ClientInfo: $($_.ClientInfo) | Archived: $($_.Archived)" }} | 
             Sort-Object UTCtime | Format-Table -AutoSize -Wrap
     }
 }
@@ -138,9 +138,9 @@ function View-ClipboardChangeTimelineList {
             HostName,
             User,
             ProcessId,
-            @{Name="Process"; Expression={ "$($_.Image) [$($_.ProcessGuid)]" }},
+            @{Name="Process"; Expression={ "Image: $($_.Image) | ProcessId: $($_.ProcessId) | ProcessGuid: $($_.ProcessGuid)" }},
             @{Name="Event"; Expression={ "Clipboard Change (24)" }},
-            @{Name="EventDetails"; Expression={ "$($_.ClientInfo) [Archived: $($_.Archived)]" }},
+            @{Name="EventDetails"; Expression={ "ClientInfo: $($_.ClientInfo) | Archived: $($_.Archived)" }},
             Hashes | 
             Sort-Object UTCtime
     }
